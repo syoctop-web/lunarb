@@ -51,7 +51,8 @@ pub fn create_tab(
     let webview_url: WebviewUrl = if parsed_url == "lunar://newtab" || parsed_url.is_empty() {
         WebviewUrl::App("newtab.html".into())
     } else {
-            WebviewUrl::External(parsed_url.parse().map_err(|e: url::ParseError| e.to_string())?)
+        let parsed_result: Result<url::Url, _> = parsed_url.parse();
+        WebviewUrl::External(parsed_result.map_err(|e| e.to_string())?)
     };
 
     let _webview = WebviewWindowBuilder::new(&app, &tab_label, webview_url)
