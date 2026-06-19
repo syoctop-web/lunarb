@@ -1,0 +1,231 @@
+/* ===============================================
+   LUNAR BROWSER - Theme Variables
+   8 built-in themes + dynamic accent override
+   =============================================== */
+
+:root {
+  /* Default = Lunar Dark */
+  --bg-primary: #0d0d12;
+  --bg-secondary: #16161d;
+  --bg-tertiary: #1f1f2a;
+  --bg-elevated: #25252f;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9494a8;
+  --text-tertiary: #6e6e85;
+  --border: #2a2a36;
+  --border-strong: #3a3a48;
+  --accent: #7c5cff;
+  --accent-hover: #9276ff;
+  --accent-soft: rgba(124, 92, 255, 0.15);
+  --danger: #ff5470;
+  --success: #3ad29f;
+  --warning: #ffb454;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --glow: 0 0 24px rgba(124, 92, 255, 0.3);
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== LUNAR DARK ===== */
+[data-theme="lunar-dark"] {
+  --bg-primary: #0d0d12;
+  --bg-secondary: #16161d;
+  --bg-tertiary: #1f1f2a;
+  --bg-elevated: #25252f;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9494a8;
+  --text-tertiary: #6e6e85;
+  --border: #2a2a36;
+  --border-strong: #3a3a48;
+  --accent: #7c5cff;
+  --accent-hover: #9276ff;
+  --accent-soft: rgba(124, 92, 255, 0.15);
+  --danger: #ff5470;
+  --success: #3ad29f;
+  --warning: #ffb454;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== LUNAR LIGHT ===== */
+[data-theme="lunar-light"] {
+  --bg-primary: #fafafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f0f3;
+  --bg-elevated: #ffffff;
+  --text-primary: #1a1a25;
+  --text-secondary: #6c6c7a;
+  --text-tertiary: #9e9eac;
+  --border: #e0e0e6;
+  --border-strong: #c4c4cc;
+  --accent: #7c5cff;
+  --accent-hover: #6b4dee;
+  --accent-soft: rgba(124, 92, 255, 0.1);
+  --danger: #e63950;
+  --success: #0fa968;
+  --warning: #e89500;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== MIDNIGHT (pure black, OLED-friendly) ===== */
+[data-theme="midnight"] {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #161616;
+  --bg-elevated: #1c1c1c;
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-tertiary: #5a5a5e;
+  --border: #1d1d1f;
+  --border-strong: #2d2d2f;
+  --accent: #0a84ff;
+  --accent-hover: #3d9bff;
+  --accent-soft: rgba(10, 132, 255, 0.18);
+  --danger: #ff453a;
+  --success: #32d74b;
+  --warning: #ffd60a;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+/* ===== SUNSET ===== */
+[data-theme="sunset"] {
+  --bg-primary: #1a0f1f;
+  --bg-secondary: #251530;
+  --bg-tertiary: #321d3f;
+  --bg-elevated: #3d2547;
+  --text-primary: #fde4d3;
+  --text-secondary: #b69ab5;
+  --text-tertiary: #7a5e7a;
+  --border: #3d2647;
+  --border-strong: #4d3357;
+  --accent: #ff6b6b;
+  --accent-hover: #ff8585;
+  --accent-soft: rgba(255, 107, 107, 0.18);
+  --danger: #ff3366;
+  --success: #7fdb9a;
+  --warning: #ffd166;
+  --shadow: 0 4px 20px rgba(26, 15, 31, 0.5);
+  --shadow-lg: 0 8px 32px rgba(26, 15, 31, 0.7);
+}
+
+/* ===== FOREST ===== */
+[data-theme="forest"] {
+  --bg-primary: #0c1410;
+  --bg-secondary: #141d18;
+  --bg-tertiary: #1d2820;
+  --bg-elevated: #243328;
+  --text-primary: #e8f0e8;
+  --text-secondary: #8aa595;
+  --text-tertiary: #5d7268;
+  --border: #26332a;
+  --border-strong: #364538;
+  --accent: #5cb85c;
+  --accent-hover: #73c873;
+  --accent-soft: rgba(92, 184, 92, 0.18);
+  --danger: #d9534f;
+  --success: #5cb85c;
+  --warning: #f0ad4e;
+  --shadow: 0 4px 20px rgba(12, 20, 16, 0.5);
+  --shadow-lg: 0 8px 32px rgba(12, 20, 16, 0.7);
+}
+
+/* ===== OCEAN ===== */
+[data-theme="ocean"] {
+  --bg-primary: #0a1929;
+  --bg-secondary: #0f2438;
+  --bg-tertiary: #152e44;
+  --bg-elevated: #1c3a52;
+  --text-primary: #d4e8f5;
+  --text-secondary: #7ba3c0;
+  --text-tertiary: #4d7a96;
+  --border: #1e3a52;
+  --border-strong: #2d4a64;
+  --accent: #00b4d8;
+  --accent-hover: #00d4ff;
+  --accent-soft: rgba(0, 180, 216, 0.18);
+  --danger: #ff4d6d;
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --shadow: 0 4px 20px rgba(10, 25, 41, 0.5);
+  --shadow-lg: 0 8px 32px rgba(10, 25, 41, 0.7);
+}
+
+/* ===== ROSE QUARTZ ===== */
+[data-theme="rose"] {
+  --bg-primary: #1a0e16;
+  --bg-secondary: #251521;
+  --bg-tertiary: #321d2c;
+  --bg-elevated: #3d2640;
+  --text-primary: #fde4ee;
+  --text-secondary: #b56e8a;
+  --text-tertiary: #80506a;
+  --border: #3d2640;
+  --border-strong: #4d3350;
+  --accent: #e63992;
+  --accent-hover: #ff5cad;
+  --accent-soft: rgba(230, 57, 146, 0.18);
+  --danger: #ff3366;
+  --success: #06d6a0;
+  --warning: #ffb454;
+  --shadow: 0 4px 20px rgba(26, 14, 22, 0.5);
+  --shadow-lg: 0 8px 32px rgba(26, 14, 22, 0.7);
+}
+
+/* ===== GRAPHITE ===== */
+[data-theme="graphite"] {
+  --bg-primary: #1c1c1c;
+  --bg-secondary: #242424;
+  --bg-tertiary: #2e2e2e;
+  --bg-elevated: #353535;
+  --text-primary: #e0e0e0;
+  --text-secondary: #9e9e9e;
+  --text-tertiary: #6e6e6e;
+  --border: #383838;
+  --border-strong: #484848;
+  --accent: #ff4081;
+  --accent-hover: #ff6b9a;
+  --accent-soft: rgba(255, 64, 129, 0.15);
+  --danger: #f44336;
+  --success: #4caf50;
+  --warning: #ff9800;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== DENSITY (heights) ===== */
+.density-compact {
+  --tab-height: 28px;
+  --toolbar-height: 36px;
+  --bookmarks-bar-height: 26px;
+  --chrome-padding: 4px;
+  --btn-size: 28px;
+}
+.density-comfortable {
+  --tab-height: 36px;
+  --toolbar-height: 44px;
+  --bookmarks-bar-height: 30px;
+  --chrome-padding: 6px;
+  --btn-size: 32px;
+}
+.density-spacious {
+  --tab-height: 42px;
+  --toolbar-height: 52px;
+  --bookmarks-bar-height: 34px;
+  --chrome-padding: 8px;
+  --btn-size: 36px;
+}
+
+/* ===== ACCENT DYNAMIC OVERRIDE ===== */
+/* The body[data-accent] attribute overrides --accent from anywhere. */
+body[data-accent] {
+  --accent: var(--accent-override, #7c5cff);
+  --accent-hover: color-mix(in srgb, var(--accent) 80%, white 20%);
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+}

@@ -1,0 +1,14 @@
+{
+  "name": "lunar-browser",
+  "version": "1.0.0",
+  "description": "Lunar - A fast, beautiful, customizable browser built in Rust",
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

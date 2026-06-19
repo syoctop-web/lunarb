@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lunar-dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lunar</title>
+  <link rel="stylesheet" href="styles/themes.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/newtab.css" />
+</head>
+<body class="density-comfortable" data-accent="#7c5cff">
+
+  <!-- ============ TITLE BAR (custom window chrome) ============ -->
+  <header id="title-bar" data-tauri-drag-region>
+    <div class="title-bar-left" data-tauri-drag-region>
+      <!-- App logo -->
+      <div class="app-logo" data-tauri-drag-region>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="currentColor" fill-opacity="0.15"/>
+        </svg>
+        <span class="app-name">Lunar</span>
+      </div>
+    </div>
+
+    <div class="title-bar-tabs" data-tauri-drag-region id="tabs-container">
+      <div id="tabs-list" class="tabs-list"></div>
+      <button id="new-tab-btn" class="new-tab-btn" title="New tab (Ctrl+T)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="title-bar-right" data-tauri-drag-region>
+      <button class="window-btn window-minimize" id="win-min" title="Minimize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="window-btn window-maximize" id="win-max" title="Maximize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="window-btn window-close" id="win-close" title="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ TOOLBAR ============ -->
+  <nav id="toolbar">
+    <div class="nav-buttons">
+      <button id="back-btn" class="nav-btn" title="Back (Alt+Left)" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="forward-btn" class="nav-btn" title="Forward (Alt+Right)" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="reload-btn" class="nav-btn" title="Reload (F5)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="home-btn" class="nav-btn" title="Home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12l9-9 9 9M5 10v10h14V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="url-bar-container">
+      <div class="url-bar-left">
+        <span class="url-icon" id="url-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </span>
+      </div>
+      <input
+        type="text"
+        id="url-bar"
+        class="url-bar"
+        placeholder="Search or enter address"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div class="url-bar-right">
+        <button id="bookmark-btn" class="url-action-btn" title="Bookmark this page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div id="url-suggestions" class="url-suggestions hidden"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button id="history-btn" class="nav-btn" title="History (Ctrl+H)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button id="bookmarks-btn" class="nav-btn" title="Bookmarks (Ctrl+D)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="menu-btn" class="nav-btn" title="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ BOOKMARKS BAR ============ -->
+  <div id="bookmarks-bar" class="bookmarks-bar">
+    <div id="bookmarks-bar-items" class="bookmarks-bar-items"></div>
+  </div>
+
+  <!-- ============ STATUS / LOADING BAR ============ -->
+  <div id="loading-bar" class="loading-bar"></div>
+
+  <!-- ============ CONTENT AREA (webviews render below this) ============ -->
+  <main id="content-area"></main>
+
+  <!-- ============ HISTORY PANEL ============ -->
+  <div id="history-panel" class="side-panel hidden">
+    <div class="panel-header">
+      <h2>History</h2>
+      <button class="panel-close" data-target="history-panel">×</button>
+    </div>
+    <div class="panel-search">
+      <input type="text" id="history-search" placeholder="Search history..." />
+    </div>
+    <div id="history-list" class="panel-list"></div>
+    <div class="panel-footer">
+      <button id="clear-history-btn" class="danger-btn">Clear All History</button>
+    </div>
+  </div>
+
+  <!-- ============ BOOKMARKS PANEL ============ -->
+  <div id="bookmarks-panel" class="side-panel hidden">
+    <div class="panel-header">
+      <h2>Bookmarks</h2>
+      <button class="panel-close" data-target="bookmarks-panel">×</button>
+    </div>
+    <div id="bookmarks-list" class="panel-list"></div>
+  </div>
+
+  <!-- ============ MENU PANEL ============ -->
+  <div id="menu-panel" class="menu-panel hidden">
+    <button class="menu-item" id="menu-new-tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      New Tab
+      <span class="menu-shortcut">Ctrl+T</span>
+    </button>
+    <button class="menu-item" id="menu-new-window">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/></svg>
+      New Window
+      <span class="menu-shortcut">Ctrl+N</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" id="menu-history">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"/></svg>
+      History
+      <span class="menu-shortcut">Ctrl+H</span>
+    </button>
+    <button class="menu-item" id="menu-bookmarks">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" stroke-width="2"/></svg>
+      Bookmarks
+      <span class="menu-shortcut">Ctrl+B</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" id="menu-zoom-in">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6" stroke="currentColor" stroke-width="2"/></svg>
+      Zoom In
+      <span class="menu-shortcut">Ctrl++</span>
+    </button>
+    <button class="menu-item" id="menu-zoom-out">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35M8 11h6" stroke="currentColor" stroke-width="2"/></svg>
+      Zoom Out
+      <span class="menu-shortcut">Ctrl+-</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" id="menu-settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2"/></svg>
+      Settings
+      <span class="menu-shortcut">Ctrl+,</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" id="menu-devtools">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Developer Tools
+      <span class="menu-shortcut">F12</span>
+    </button>
+  </div>
+
+  <!-- ============ SETTINGS PANEL ============ -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="panel-header">
+      <h2>Settings</h2>
+      <button class="panel-close" data-target="settings-panel">×</button>
+    </div>
+    <div class="settings-body">
+      <aside class="settings-sidebar">
+        <button class="settings-tab active" data-tab="appearance">Appearance</button>
+        <button class="settings-tab" data-tab="general">General</button>
+        <button class="settings-tab" data-tab="privacy">Privacy &amp; Security</button>
+        <button class="settings-tab" data-tab="performance">Performance</button>
+        <button class="settings-tab" data-tab="advanced">Advanced</button>
+      </aside>
+      <div class="settings-content">
+        <section id="settings-appearance" class="settings-section active">
+          <h3>Theme</h3>
+          <div class="theme-grid" id="theme-grid"></div>
+
+          <h3>Accent Color</h3>
+          <div class="accent-colors" id="accent-colors">
+            <button class="accent-swatch" data-color="#7c5cff" style="background:#7c5cff"></button>
+            <button class="accent-swatch" data-color="#0a84ff" style="background:#0a84ff"></button>
+            <button class="accent-swatch" data-color="#00b4d8" style="background:#00b4d8"></button>
+            <button class="accent-swatch" data-color="#5cb85c" style="background:#5cb85c"></button>
+            <button class="accent-swatch" data-color="#ff6b6b" style="background:#ff6b6b"></button>
+            <button class="accent-swatch" data-color="#e63992" style="background:#e63992"></button>
+            <button class="accent-swatch" data-color="#ffb454" style="background:#ffb454"></button>
+            <button class="accent-swatch" data-color="#ff4081" style="background:#ff4081"></button>
+            <label class="accent-swatch custom-color">
+              <input type="color" id="custom-accent" value="#7c5cff" />
+              <span>+</span>
+            </label>
+          </div>
+
+          <h3>Density</h3>
+          <div class="density-options">
+            <button class="density-btn" data-density="compact">Compact</button>
+            <button class="density-btn" data-density="comfortable">Comfortable</button>
+            <button class="density-btn" data-density="spacious">Spacious</button>
+          </div>
+
+          <h3>Font Family</h3>
+          <select id="font-family" class="select-input">
+            <option value="system">System Default</option>
+            <option value="inter">Inter</option>
+            <option value="roboto">Roboto</option>
+            <option value="jetbrains">JetBrains Mono</option>
+          </select>
+
+          <h3>Font Size</h3>
+          <div class="range-input">
+            <input type="range" id="font-size" min="11" max="20" value="14" />
+            <span id="font-size-label">14px</span>
+          </div>
+
+          <h3>Custom CSS</h3>
+          <textarea id="custom-css" class="textarea-input" placeholder="/* Add your custom CSS here */" rows="6"></textarea>
+        </section>
+
+        <section id="settings-general" class="settings-section">
+          <h3>Search Engine</h3>
+          <select id="search-engine" class="select-input">
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="brave">Brave Search</option>
+          </select>
+
+          <h3>Homepage</h3>
+          <input type="text" id="homepage" class="text-input" placeholder="lunar://newtab" />
+
+          <h3>Layout</h3>
+          <label class="checkbox-row">
+            <input type="checkbox" id="show-home-btn" />
+            <span>Show Home button</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="show-bookmarks-bar" />
+            <span>Show bookmarks bar</span>
+          </label>
+
+          <h3>Animations</h3>
+          <label class="checkbox-row">
+            <input type="checkbox" id="animations-enabled" />
+            <span>Enable UI animations</span>
+          </label>
+        </section>
+
+        <section id="settings-privacy" class="settings-section">
+          <h3>Privacy</h3>
+          <label class="checkbox-row">
+            <input type="checkbox" id="block-ads" />
+            <span>Block ads (host-based)</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="dnt" />
+            <span>Send "Do Not Track" header</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="auto-clear" />
+            <span>Auto-clear browsing data on exit</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="confirm-close" />
+            <span>Confirm before closing multiple tabs</span>
+          </label>
+        </section>
+
+        <section id="settings-performance" class="settings-section">
+          <h3>Performance</h3>
+          <label class="checkbox-row">
+            <input type="checkbox" id="hw-accel" />
+            <span>Hardware acceleration (recommended)</span>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" id="smooth-scroll" />
+            <span>Smooth scrolling</span>
+          </label>
+          <h3>Default Zoom</h3>
+          <div class="range-input">
+            <input type="range" id="default-zoom" min="50" max="200" value="100" step="10" />
+            <span id="zoom-label">100%</span>
+          </div>
+        </section>
+
+        <section id="settings-advanced" class="settings-section">
+          <h3>Session</h3>
+          <label class="checkbox-row">
+            <input type="checkbox" id="restore-session" />
+            <span>Restore previous session on startup</span>
+          </label>
+          <h3>Reset</h3>
+          <button id="reset-settings" class="danger-btn">Reset all settings to defaults</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONTEXT MENU FOR TABS ============ -->
+  <div id="tab-context-menu" class="context-menu hidden">
+    <button class="context-item" data-action="duplicate">Duplicate Tab</button>
+    <button class="context-item" data-action="close">Close</button>
+    <button class="context-item" data-action="close-others">Close Other Tabs</button>
+    <button class="context-item" data-action="reload">Reload</button>
+    <div class="menu-divider"></div>
+    <button class="context-item" data-action="bookmark">Bookmark Tab</button>
+  </div>
+
+  <script type="module" src="scripts/app.js"></script>
+</body>
+</html>
