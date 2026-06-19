@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use parking_lot::Mutex;
-use once_cell::sync::Lazy;
+
 
 static TAB_COUNTER: AtomicU64 = AtomicU64::new(1);
 
