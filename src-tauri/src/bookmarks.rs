@@ -12,7 +12,7 @@ pub struct Bookmark {
     pub url: String,
     pub title: String,
     pub favicon: Option<String>,
-    pub folder: String, // "" for root
+    pub folder: String,
     pub created_at: i64,
 }
 
@@ -21,10 +21,7 @@ pub struct BookmarksState {
 }
 
 fn bookmarks_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let app_dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| e.to_string())?;
+    let app_dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
     fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
     Ok(app_dir.join("bookmarks.json"))
 }
@@ -34,10 +31,8 @@ pub fn init_db(app: &AppHandle) -> Result<(), String> {
     if !path.exists() {
         fs::write(&path, "[]").map_err(|e| e.to_string())?;
     }
-
     let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let entries: Vec<Bookmark> = serde_json::from_str(&content).unwrap_or_default();
-
     let state = app.state::<BookmarksState>();
     *state.entries.lock() = entries;
     Ok(())
@@ -77,7 +72,8 @@ pub fn add_bookmark(
 #[tauri::command]
 pub fn get_bookmarks(app: AppHandle) -> Result<Vec<Bookmark>, String> {
     let state = app.state::<BookmarksState>();
-    Ok(state.entries.lock().clone())
+    let entries = state.entries.lock();
+    Ok(entries.clone())
 }
 
 #[tauri::command]
@@ -93,5 +89,6 @@ pub fn delete_bookmark(app: AppHandle, id: String) -> Result<(), String> {
 #[tauri::command]
 pub fn is_bookmarked(app: AppHandle, url: String) -> Result<bool, String> {
     let state = app.state::<BookmarksState>();
-    Ok(state.entries.lock().iter().any(|b| b.url == url))
+    let entries = state.entries.lock();
+    Ok(entries.iter().any(|b| b.url == url))
 }
