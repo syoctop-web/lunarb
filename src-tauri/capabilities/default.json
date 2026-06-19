@@ -33,7 +33,6 @@
     "core:webview:allow-webview-close",
     "core:webview:allow-webview-hide",
     "core:webview:allow-webview-show",
-    "core:webview:allow-reparent",
     "core:webview:allow-print",
     "core:event:default",
     "core:event:allow-emit",
@@ -50,10 +49,6 @@
     "shell:allow-open",
     "dialog:default",
     "fs:default",
-    "fs:allow-read-text-file",
-    "fs:allow-write-text-file",
-    "fs:allow-create-dir",
-    "fs:allow-exists",
     "os:default",
     "process:default",
     "window-state:default"
