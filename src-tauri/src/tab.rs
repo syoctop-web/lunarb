@@ -25,12 +25,9 @@ pub struct TabState {
     pub active_tab: Mutex<Option<u64>>,
 }
 
-static GLOBAL_STATE: Lazy<Mutex<Option<AppHandle>>> = Lazy::new(|| Mutex::new(None));
-
-const CHROME_HEIGHT: f64 = 88.0; // tab bar + toolbar height (adjusted dynamically from frontend)
+const CHROME_HEIGHT: f64 = 88.0;
 
 /// Create a new tab with the given URL.
-/// The tab is a webview positioned below the browser chrome.
 #[tauri::command]
 pub fn create_tab(
     app: AppHandle,
@@ -38,61 +35,45 @@ pub fn create_tab(
     label: Option<String>,
 ) -> Result<Tab, String> {
     let tab_id = TAB_COUNTER.fetch_add(1, Ordering::SeqCst);
-    let tab_label = label
-        .unwrap_or_else(|| format!("tab-{}", tab_id));
-    let target_url = url.unwrap_or_else(|| {
-        "lunar://newtab".to_string()
-    });
+    let tab_label = label.unwrap_or_else(|| format!("tab-{}", tab_id));
+    let target_url = url.unwrap_or_else(|| "lunar://newtab".to_string());
 
-    // Get main window to position the webview inside it
     let main_window = app
         .get_webview_window("main")
         .ok_or("Main window not found")?;
 
-    let scale = main_window
-        .scale_factor()
-        .unwrap_or(1.0);
-    let logical_size = main_window
-        .inner_size()
-        .map_err(|e| e.to_string())?;
+    let scale = main_window.scale_factor().unwrap_or(1.0);
+    let logical_size = main_window.inner_size().map_err(|e| e.to_string())?;
     let width = logical_size.width as f64 / scale;
     let height = logical_size.height as f64 / scale - CHROME_HEIGHT;
 
-    // Build webview as child of main window
     let parsed_url = normalize_url(&target_url);
     let webview_url: WebviewUrl = if parsed_url == "lunar://newtab" || parsed_url.is_empty() {
         WebviewUrl::App("newtab.html".into())
     } else {
-        WebviewUrl::External(parsed_url.parse().map_err(|e: Box<dyn std::error::Error>| e.to_string())?)
+        WebviewUrl::External(parsed_url.parse().map_err(|e| e.to_string())?)
     };
 
-    let webview = WebviewWindowBuilder::new(
-        &app,
-        &tab_label,
-        webview_url,
-    )
-    .title("")
-    .inner_size(width, height)
-    .position(0.0, CHROME_HEIGHT)
-    .resizable(true)
-    .focused(true)
-    .decorations(false)
-    .skip_taskbar(true)
-    .always_on_bottom(false)
-    .visible(true)
-    .build()
-    .map_err(|e| e.to_string())?;
+    let _webview = WebviewWindowBuilder::new(&app, &tab_label, webview_url)
+        .title("")
+        .inner_size(width, height)
+        .position(0.0, CHROME_HEIGHT)
+        .resizable(true)
+        .focused(true)
+        .decorations(false)
+        .skip_taskbar(true)
+        .visible(true)
+        .build()
+        .map_err(|e| e.to_string())?;
 
-    // Try to reparent to main window (platform-dependent)
-    let _ = webview.reparent(&main_window);
+    // Note: Tauri 2.5 has no reparent API; webview is created at the desired
+    // position and managed by the AppHandle's webview registry.
 
-    // Hide all webviews except the new one
     hide_other_tabs(&app, tab_id);
 
-    // Tab metadata
     let tab = Tab {
         id: tab_id,
-        url: target_url.clone(),
+        url: parsed_url.clone(),
         title: "New Tab".to_string(),
         loading: true,
         favicon: None,
@@ -102,7 +83,6 @@ pub fn create_tab(
     state.tabs.lock().push(tab.clone());
     *state.active_tab.lock() = Some(tab_id);
 
-    // Emit tab-created event to frontend
     let _ = app.emit("tab-created", &tab);
     let _ = app.emit("tabs-updated", list_tabs_internal(&app));
 
@@ -133,14 +113,14 @@ pub fn close_tab(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let mut tabs = state.tabs.lock();
     tabs.retain(|t| t.id != tab_id);
 
-    // If active tab was closed, switch to the last remaining tab
     let mut active = state.active_tab.lock();
     if *active == Some(tab_id) {
         *active = tabs.last().map(|t| t.id);
-        if let Some(new_active) = *active {
-            drop(active);
-            drop(tabs);
-            set_active_tab(app.clone(), new_active)?;
+        let new_active = *active;
+        drop(active);
+        drop(tabs);
+        if let Some(new_active_id) = new_active {
+            set_active_tab(app.clone(), new_active_id)?;
         }
     }
 
@@ -157,17 +137,17 @@ pub fn navigate_tab(app: AppHandle, tab_id: u64, url: String) -> Result<(), Stri
 
     let parsed = normalize_url(&url);
 
-    // For lunar://newtab, navigate to the embedded newtab page
     let eval_js = if parsed == "lunar://newtab" {
-        // Use Tauri's asset protocol to load newtab.html
-        format!("window.location.href = 'newtab.html';")
+        "window.location.href = 'newtab.html';".to_string()
     } else {
-        format!("window.location.href = {};", serde_json::to_string(&parsed).unwrap())
+        format!(
+            "window.location.href = {};",
+            serde_json::to_string(&parsed).unwrap()
+        )
     };
 
     wv.eval(&eval_js).map_err(|e| e.to_string())?;
 
-    // Update tab metadata
     let state = app.state::<TabState>();
     let mut tabs = state.tabs.lock();
     if let Some(tab) = tabs.iter_mut().find(|t| t.id == tab_id) {
@@ -205,52 +185,40 @@ pub fn set_tab_url(app: AppHandle, tab_id: u64, url: String) -> Result<(), Strin
 #[tauri::command]
 pub fn go_back(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let label = format!("tab-{}", tab_id);
-    let wv = app
-        .get_webview_window(&label)
-        .ok_or("Tab not found")?;
-    wv.eval("window.history.back();")
-        .map_err(|e| e.to_string())
+    let wv = app.get_webview_window(&label).ok_or("Tab not found")?;
+    wv.eval("window.history.back();").map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn go_forward(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let label = format!("tab-{}", tab_id);
-    let wv = app
-        .get_webview_window(&label)
-        .ok_or("Tab not found")?;
-    wv.eval("window.history.forward();")
-        .map_err(|e| e.to_string())
+    let wv = app.get_webview_window(&label).ok_or("Tab not found")?;
+    wv.eval("window.history.forward();").map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn reload_tab(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let label = format!("tab-{}", tab_id);
-    let wv = app
-        .get_webview_window(&label)
-        .ok_or("Tab not found")?;
-    wv.eval("window.location.reload();")
-        .map_err(|e| e.to_string())
+    let wv = app.get_webview_window(&label).ok_or("Tab not found")?;
+    wv.eval("window.location.reload();").map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn stop_loading(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let label = format!("tab-{}", tab_id);
-    let wv = app
-        .get_webview_window(&label)
-        .ok_or("Tab not found")?;
-    wv.eval("window.stop();")
-        .map_err(|e| e.to_string())
+    let wv = app.get_webview_window(&label).ok_or("Tab not found")?;
+    wv.eval("window.stop();").map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn get_active_tab(app: AppHandle) -> Result<Option<u64>, String> {
     let state = app.state::<TabState>();
-    Ok(*state.active_tab.lock())
+    let active = *state.active_tab.lock();
+    Ok(active)
 }
 
 #[tauri::command]
 pub fn set_active_tab(app: AppHandle, tab_id: u64) -> Result<(), String> {
-    // Hide all webviews except the new active one
     let state = app.state::<TabState>();
     let tabs = state.tabs.lock();
 
@@ -279,15 +247,14 @@ pub fn list_tabs(app: AppHandle) -> Result<Vec<Tab>, String> {
 
 fn list_tabs_internal(app: &AppHandle) -> Vec<Tab> {
     let state = app.state::<TabState>();
-    state.tabs.lock().clone()
+    let tabs = state.tabs.lock();
+    tabs.clone()
 }
 
 #[tauri::command]
 pub fn open_devtools(app: AppHandle, tab_id: u64) -> Result<(), String> {
     let label = format!("tab-{}", tab_id);
-    let wv = app
-        .get_webview_window(&label)
-        .ok_or("Tab not found")?;
+    let wv = app.get_webview_window(&label).ok_or("Tab not found")?;
     #[cfg(debug_assertions)]
     {
         wv.open_devtools();
@@ -300,23 +267,14 @@ pub fn open_devtools(app: AppHandle, tab_id: u64) -> Result<(), String> {
     }
 }
 
-/// Normalize user input to a proper URL.
-/// "example.com" -> "https://example.com"
-/// "search terms" -> "https://www.google.com/search?q=..."
 pub fn normalize_url(input: &str) -> String {
     let trimmed = input.trim();
-
-    // Empty
     if trimmed.is_empty() {
         return "about:blank".to_string();
     }
-
-    // Internal Lunar pages
     if trimmed.starts_with("lunar://") {
         return trimmed.to_string();
     }
-
-    // Already has a scheme
     if trimmed.starts_with("http://")
         || trimmed.starts_with("https://")
         || trimmed.starts_with("about:")
@@ -325,21 +283,15 @@ pub fn normalize_url(input: &str) -> String {
     {
         return trimmed.to_string();
     }
-
-    // Looks like a URL (contains a dot, no spaces)
-    let looks_like_url = trimmed.contains('.')
-        && !trimmed.contains(' ')
-        && trimmed.split('.').count() >= 2;
+    let looks_like_url =
+        trimmed.contains('.') && !trimmed.contains(' ') && trimmed.split('.').count() >= 2;
 
     if looks_like_url {
         format!("https://{}", trimmed)
     } else {
-        // Treat as a search query
         format!(
             "https://www.google.com/search?q={}",
             urlencoding::encode(trimmed)
         )
     }
 }
-
-// We need urlencoding - add it to Cargo.toml dependencies
